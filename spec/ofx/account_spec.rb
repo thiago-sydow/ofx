@@ -20,6 +20,10 @@ describe OFX::Account do
       expect(@account.id).to eql "03227113109"
     end
 
+    it "returns branch id" do
+      expect(@account.branch_id).to eql "0001"
+    end
+
     it "returns type" do
       expect(@account.type).to eql :checking
     end

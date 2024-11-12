@@ -86,6 +86,7 @@ module OFX
         OFX::Account.new({
                            bank_id: node.search('bankacctfrom > bankid').inner_text,
                            id: node.search('bankacctfrom > acctid, ccacctfrom > acctid').inner_text,
+                           branch_id: node.search('bankacctfrom > branchid').inner_text,
                            type: ACCOUNT_TYPES[node.search('bankacctfrom > accttype').inner_text.to_s.upcase],
                            transactions: build_transactions(node),
                            balance: build_balance(node),
