@@ -153,6 +153,8 @@ module OFX
       def build_date(date)
         tz_pattern = /(?:\[([+-]?\d{1,4}):\S{3}\])?\z/
 
+        date = date.insert(6, '0') if !Date.valid_date?(date[0..3].to_i, date[4..5].to_i, date[6..7].to_i)
+
         # Timezone offset handling
         date.sub!(tz_pattern, '')
         offset = Regexp.last_match(1)

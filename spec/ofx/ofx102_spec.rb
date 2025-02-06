@@ -58,6 +58,7 @@ describe OFX::Parser::OFX102 do
 
     context "with a Time Zone" do
       it "returns the correct date" do
+        expect(@parser.send(:build_date, "2025024171840[-3:GMT]")).to eql Time.new(2025, 2, 4, 17, 18, 40, "-03:00")
         expect(@parser.send(:build_date, "20150507164333[-0300:BRT]")).to eql Time.new(2015, 5, 7, 16, 43, 33, "-03:00")
         expect(@parser.send(:build_date, "20180507120000[0:GMT]")).to eql Time.gm(2018, 5, 7, 12)
         expect(@parser.send(:build_date, "20170904082855[-3:GMT]")).to eql Time.new(2017, 9, 4, 8, 28, 55, "-03:00")
