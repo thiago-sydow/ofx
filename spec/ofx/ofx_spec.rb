@@ -16,5 +16,9 @@ describe OFX do
     it "returns the parser" do
       expect(OFX("spec/fixtures/sample.ofx").class).to eql OFX::Parser::OFX102
     end
+
+    it "returns the parser for OFX 100" do
+      expect(OFX("spec/fixtures/sample_100.ofx").class).to eql OFX::Parser::OFX102
+    end
   end
 end
