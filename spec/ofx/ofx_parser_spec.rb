@@ -61,6 +61,13 @@ describe OFX::Parser do
     expect(ofx.parser).to eql 'ofx-211-parser'
   end
 
+  it "uses 103 parser to parse version 200 ofx files" do
+    expect(OFX::Parser::OFX103).to receive(:new).and_return('ofx-103-parser')
+
+    ofx = OFX::Parser::Base.new(ofx_no_header_example)
+    expect(ofx.parser).to eql 'ofx-103-parser'
+  end
+
   describe "headers" do
     it "has OFXHEADER" do
       expect(@ofx.headers["OFXHEADER"]).to eql "100"
@@ -114,10 +121,16 @@ describe OFX::Parser do
 
   def ofx_2_example(version)
     <<-EndOfx
-<?xml version="1.0" encoding="US-ASCII"?>
-<?OFX OFXHEADER="200" VERSION="#{version}" SECURITY="NONE" OLDFILEUID="NONE" NEWFILEUID="NONE"?>"
-<OFX>
-</OFX>
+    <?xml version="1.0" encoding="US-ASCII"?>
+      <?OFX OFXHEADER="200" VERSION="#{version}" SECURITY="NONE" OLDFILEUID="NONE" NEWFILEUID="NONE"?>
+      <OFX>
+    EndOfx
+  end
+
+  def ofx_no_header_example
+    <<-EndOfx
+    <OFX>
+    </OFX>
     EndOfx
   end
 end
