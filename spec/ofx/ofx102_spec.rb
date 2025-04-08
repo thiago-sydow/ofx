@@ -48,6 +48,33 @@ describe OFX::Parser::OFX102 do
     end
   end
 
+  describe "multiple currencies accounts" do
+    let(:parser) { OFX::Parser::Base.new(File.read('spec/fixtures/extratoBS2.ofx')).parser }
+
+    it "parses multiple currencies account" do
+      expect(parser.accounts.size).to eql 1
+      expect(parser.accounts.first).to be_a_kind_of(OFX::Account)
+    end
+
+    it "parses multiple currencies statements" do
+      expect(parser.statements.size).to eql 5
+      expect(parser.statements.map(&:currency)).to eql(["USD", "EUR", "GBP", "CAD", "AUD"])
+      expect(parser.statements.first).to be_a_kind_of(OFX::Statement)
+    end
+
+    it "parses multiple currencies transactions" do
+      transactions = parser.statements.map(&:transactions).flatten
+
+      expect(transactions.size).to eql 2
+
+      expect(transactions.first.fit_id).to eql("107472")
+      expect(transactions.first.amount_in_pennies).to eql(2_752_32)
+
+      expect(transactions.last.fit_id).to eql("107475")
+      expect(transactions.last.amount_in_pennies).to eql(1_000_00)
+    end
+  end
+
   describe "#build_date" do
     context "without a Time Zone" do
       it "defaults to GMT" do

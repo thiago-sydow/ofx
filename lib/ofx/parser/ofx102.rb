@@ -34,11 +34,13 @@ module OFX
       end
 
       def statements
-        @statements ||= html.search('stmttrnrs, ccstmttrnrs').collect { |node| build_statement(node) }
+        @statements ||= html.search('stmttrnrs, ccstmttrnrs').collect { |node| build_statements(node) }.flatten
       end
 
       def accounts
-        @accounts ||= html.search('stmttrnrs, ccstmttrnrs').collect { |node| build_account(node) }
+        return @accounts if defined?(@accounts)
+
+        @accounts = html.search('stmttrnrs, ccstmttrnrs').collect { |node| build_accounts(node) }.flatten.uniq { |acct| acct.id }
       end
 
       # DEPRECATED: kept for legacy support
@@ -68,18 +70,33 @@ module OFX
 
       private
 
-      def build_statement(node)
-        stmrs_node = node.search('stmtrs, ccstmtrs')
-        account = build_account(node)
+      def build_statements(node)
+        stmrs_nodes = node.search('stmtrs, ccstmtrs')
+
+        return stmrs_nodes.map { |stmrs_node| build_statement(stmrs_node, stmrs_node) } if stmrs_nodes.size > 1
+
+        build_statement(node, stmrs_nodes)
+      end
+
+      def build_statement(node_for_account, node_for_statement)
+        account = build_account(node_for_account)
         OFX::Statement.new(
-          currency: stmrs_node.search('curdef').inner_text,
-          start_date: build_date(stmrs_node.search('banktranlist > dtstart').inner_text),
-          end_date: build_date(stmrs_node.search('banktranlist > dtend').inner_text),
+          currency: node_for_statement.search('curdef').inner_text,
+          start_date: build_date(node_for_statement.search('banktranlist > dtstart').inner_text),
+          end_date: build_date(node_for_statement.search('banktranlist > dtend').inner_text),
           account: account,
           transactions: account.transactions,
           balance: account.balance,
           available_balance: account.available_balance
         )
+      end
+
+      def build_accounts(node)
+        stmrs_nodes = node.search('stmtrs, ccstmtrs')
+
+        return stmrs_nodes.map { |stmrs_node| build_account(stmrs_node) } if stmrs_nodes.size > 1
+
+        build_account(node)
       end
 
       def build_account(node)
