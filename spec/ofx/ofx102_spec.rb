@@ -91,5 +91,32 @@ describe OFX::Parser::OFX102 do
         expect(@parser.send(:build_date, "20170904082855[-3:GMT]")).to eql Time.new(2017, 9, 4, 8, 28, 55, "-03:00")
       end
     end
+
+    context "with a zeroed timestamp" do
+      it "returns nil instead of raising" do
+        expect(@parser.send(:build_date, "00000000")).to be_nil
+        expect(@parser.send(:build_date, "00000000000000")).to be_nil
+      end
+    end
+  end
+
+  describe "zeroed dates file" do
+    let(:parser) { OFX::Parser::Base.new(File.read('spec/fixtures/zeroed_dates.ofx')).parser }
+
+    it "parses statements without raising" do
+      expect { parser.statements }.not_to raise_error
+    end
+
+    it "nils out the zeroed statement start/end dates" do
+      statement = parser.statements.first
+      expect(statement.start_date).to be_nil
+      expect(statement.end_date).to be_nil
+    end
+
+    it "still parses transactions that have valid posted dates" do
+      transactions = parser.statements.first.transactions
+      expect(transactions.size).to eql 5
+      expect(transactions.first.posted_at).to eql Time.gm(2026, 5, 7, 0, 0, 0)
+    end
   end
 end

@@ -189,6 +189,8 @@ module OFX
         date << " #{offset}"
 
         Time.parse(date)
+      rescue ArgumentError
+        nil
       end
 
       def build_balance(node)
